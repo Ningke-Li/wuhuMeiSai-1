@@ -68,13 +68,15 @@ class MatrixArea:
             win = None
             for candidate in candidates:
                 total = 0
-                for row in range(candidate[0] - 5, candidate[0] + 5):
-                    for col in range(candidate[1] - 5, candidate[1] + 5):
-                        total += (self.matrix.ff_df.iloc[row, col] * 1000 + self.matrix.fs_df.iloc[row, col] / 100) * (
-                                self.matrix.view_time_df.iloc[row, col] + MatrixArea.SSA.BASE)
+                for row in range(candidate[0] - 20, candidate[0] + 20):
+                    for col in range(candidate[1] - 20, candidate[1] + 20):
+                        total += (self.matrix.ff_df.iloc[row, col] * 1000 + self.matrix.fs_df.iloc[
+                            row, col] / 100 + MatrixArea.SSA.BASE) * (self.matrix.view_time_df.iloc[row, col])
                 win = candidate if total > max_ else win
                 max_ = total
+            # print(self.loc)
             self.loc = win
+            # print(' move to ', self.loc)
 
         def charge(self):
             self.charge_left = 210
@@ -126,6 +128,7 @@ class MatrixArea:
         for drone in self.SSA_drones:
             new_drones_loc.append(drone.loc)
         self.SSA_loc_list = new_drones_loc
+        print(self.SSA_loc_list)
 
         a = np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows)
         self.air_info = pd.DataFrame(a)
@@ -159,12 +162,12 @@ class MatrixArea:
         self.get_new_SSA_loc()
         self.refresh()
         self.air_info.to_csv('./result/routine/' + str(time_) + '.csv')
+        print(time_)
 
     def start(self, times=400):
-        self.refresh()
         for i in range(times):
             self.next_step(i)
-        self.max_view_time_df.to_csv('./result/max_view_time/max.csv')
+        self.max_view_time_df.to_csv('./result/max_view_time/max3.csv')
 
     def show(self):
         print(self.ff_df)
@@ -175,4 +178,4 @@ if __name__ == '__main__':
                 [29, 25], [28, 25], [27, 25], [26, 25], [25, 25]]
 
     m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', 10, loc_list)
-    m.start(10)
+    m.start(20)
