@@ -3,6 +3,7 @@
 
 import pandas as pd
 import numpy as np
+import math
 
 
 class MatrixArea:
@@ -33,22 +34,48 @@ class MatrixArea:
             dis = calc_d()
             return dis / self.battery
 
+        def isCrowded(self) -> bool:
+            if self.ifInUrban == 1:
+                for drone_loc in self.matrix.SSA_loc_list:
+                    d = math.sqrt((drone_loc[0] - self.loc[0]) ** 2 + (drone_loc[1] - self.loc[1]) ** 2)
+                    if d == 0:
+                        pass
+                    else:
+                        if d < 4:
+                            return True
+                return False
+            else:
+                for drone_loc in self.matrix.SSA_loc_list:
+                    d = math.sqrt((drone_loc[0] - self.loc[0]) ** 2 + (drone_loc[1] - self.loc[1]) ** 2)
+                    if d == 0:
+                        pass
+                    else:
+                        if d < 10:
+                            return True
+                return False
+
+        def run_away(self, scale):
+            pass
+
         def calc_desire_and_move(self):
-            candidates = [[self.loc[0], self.loc[1] + 1], [self.loc[0], self.loc[1] - 1],
-                          [self.loc[0] - 1, self.loc[1] + 1], [self.loc[0] - 1, self.loc[1] - 1],
-                          [self.loc[0] - 1, self.loc[1]],
-                          [self.loc[0] + 1, self.loc[1]], [self.loc[0] + 1, self.loc[1] - 1],
-                          [self.loc[0] + 1, self.loc[1] + 1]]
-            max_ = 0
-            win = None
-            for candidate in candidates:
-                total = 0
-                for row in range(candidate[0] - 5, candidate[0] + 5):
-                    for col in range(candidate[1] - 5, candidate[1] + 5):
-                        total += self.matrix.ff_df.iloc(row, col) * 1000 + self.matrix.fs_df.iloc(row, col) / 100
-                win = candidate if total > max_ else win
-                max_ = total
-            self.loc = win
+            if self.isCrowded():
+                self.run_away(4 if self.ifInUrban == 1 else 10)
+            else:
+                candidates = [[self.loc[0], self.loc[1] + 1], [self.loc[0], self.loc[1] - 1],
+                              [self.loc[0] - 1, self.loc[1] + 1], [self.loc[0] - 1, self.loc[1] - 1],
+                              [self.loc[0] - 1, self.loc[1]],
+                              [self.loc[0] + 1, self.loc[1]], [self.loc[0] + 1, self.loc[1] - 1],
+                              [self.loc[0] + 1, self.loc[1] + 1]]
+                max_ = 0
+                win = None
+                for candidate in candidates:
+                    total = 0
+                    for row in range(candidate[0] - 5, candidate[0] + 5):
+                        for col in range(candidate[1] - 5, candidate[1] + 5):
+                            total += self.matrix.ff_df.iloc(row, col) * 1000 + self.matrix.fs_df.iloc(row, col) / 100
+                    win = candidate if total > max_ else win
+                    max_ = total
+                self.loc = win
 
         def charge(self):
             self.charge_left = 210
@@ -60,7 +87,7 @@ class MatrixArea:
             else:
                 self.charge_left -= 1
 
-    def __init__(self, ff_file_name, fs_file_name, ur_file_name, SSA_num):
+    def __init__(self, ff_file_name, fs_file_name, ur_file_name, SSA_num, SSA_loc_list):
         self.ff_df = pd.read_csv(ff_file_name)
         self.ur_df = pd.read_csv(ur_file_name)
         self.fs_df = pd.read_csv(fs_file_name)
@@ -86,7 +113,8 @@ class MatrixArea:
         # 初始化每个SSA对象
         self.SSA_drones = []
         for plane in range(1, SSA_num + 1):
-            self.SSA_drones.append(MatrixArea.SSA(plane, matrix=self))
+            self.SSA_drones.append(MatrixArea.SSA(plane, matrix=self, loc=SSA_loc_list[plane-1]))
+        self.SSA_loc_list = SSA_loc_list
 
         # 性能指标
         # 每项指标： [距离上一次观测到的时间, 观测率, 最长观测间隔]
@@ -106,5 +134,8 @@ class MatrixArea:
 
 
 if __name__ == '__main__':
-    m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', 10)
+    loc_list = [[24, 25], [23, 25], [24, 26], [24, 27], [24, 28],
+                [29, 25], [28, 25], [27, 25], [26, 25], [25, 25]]
+
+    m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', 10, loc_list)
     # m.show()
