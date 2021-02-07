@@ -7,30 +7,58 @@ import numpy as np
 
 class MatrixArea:
     class SSA:
+        chargeLoc = [[24, 74], [24, 24], [74, 24], [74, 74]]
+        CHARGE_THRESHOLD = 0.9
+
         def __init__(self, name: int, matrix, loc=None):
             if loc is None:
                 loc = [49, 49]
             self.loc = loc
-            self.battery = 1.0
+            self.battery = 432
             self.charge_desire = 0
             self.eat_desire = 0
             self.name = name
             self.matrix = matrix
+            self.ifInUrban = self.matrix.ur_df.iloc[loc[0], loc[1]]
+            self.charge_left = 0
 
         def calc_charge_desire(self) -> float:
-            pass
+            def calc_d():
+                d = 0
+                for cLoc in MatrixArea.SSA.chargeLoc:
+                    d = abs(cLoc[1] - self.loc[1]) if d < abs(cLoc[1] - self.loc[1]) else d
+                    d = abs(cLoc[2] - self.loc[2]) if d < abs(cLoc[2] - self.loc[2]) else d
+                return d
 
-        def calc_eat_desire(self) -> float:
-            pass
+            dis = calc_d()
+            return dis / self.battery
+
+        def calc_desire_and_move(self):
+            candidates = [[self.loc[0], self.loc[1] + 1], [self.loc[0], self.loc[1] - 1],
+                          [self.loc[0] - 1, self.loc[1] + 1], [self.loc[0] - 1, self.loc[1] - 1],
+                          [self.loc[0] - 1, self.loc[1]],
+                          [self.loc[0] + 1, self.loc[1]], [self.loc[0] + 1, self.loc[1] - 1],
+                          [self.loc[0] + 1, self.loc[1] + 1]]
+            max_ = 0
+            win = None
+            for candidate in candidates:
+                total = 0
+                for row in range(candidate[0] - 5, candidate[0] + 5):
+                    for col in range(candidate[1] - 5, candidate[1] + 5):
+                        total += self.matrix.ff_df.iloc(row, col) * 1000 + self.matrix.fs_df.iloc(row, col) / 100
+                win = candidate if total > max_ else win
+                max_ = total
+            self.loc = win
 
         def charge(self):
-            pass
-
-        def eat(self):
-            pass
+            self.charge_left = 210
 
         def move(self):
-            self.charge() if self.calc_eat_desire() > self.calc_charge_desire() else self.eat()
+            if self.charge_left == 0:
+                self.charge() if self.calc_charge_desire() > MatrixArea.SSA.CHARGE_THRESHOLD \
+                    else self.calc_desire_and_move()
+            else:
+                self.charge_left -= 1
 
     def __init__(self, ff_file_name, fs_file_name, ur_file_name, SSA_num):
         self.ff_df = pd.read_csv(ff_file_name)
@@ -48,6 +76,12 @@ class MatrixArea:
         self.air_info = pd.DataFrame(a)
         self.air_info.iloc[49, 49] = str([i for i in range(1, SSA_num + 1)])
         # print(self.air_info.iloc[45: 55, 45: 55])
+        # 初始化repeater信息（充电的地方）
+        self.repeater_info = pd.DataFrame(a)
+        self.repeater_info.iloc[24, 74] = 1
+        self.repeater_info.iloc[24, 24] = 1
+        self.repeater_info.iloc[74, 74] = 1
+        self.repeater_info.iloc[74, 24] = 1
 
         # 初始化每个SSA对象
         self.SSA_drones = []
@@ -55,7 +89,7 @@ class MatrixArea:
             self.SSA_drones.append(MatrixArea.SSA(plane, matrix=self))
 
         # 性能指标
-        # 每项指标： [距离上一次观测到的时间, 观测率, 超时次数]
+        # 每项指标： [距离上一次观测到的时间, 观测率, 最长观测间隔]
         b = np.array([str([0, 0, 0]) for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows)
         self.sf_df = pd.DataFrame(b)  # 刷新率
 
