@@ -10,7 +10,8 @@ class MatrixArea:
     class SSA:
         chargeLoc = [[24, 74], [24, 24], [74, 24], [74, 74]]
         CHARGE_THRESHOLD = 0.9
-        BASE = 0.2
+        BASE = 8
+        VIEWS = 2 * 10
 
         def __init__(self, name: int, matrix, loc=None):
             if loc is None:
@@ -64,19 +65,137 @@ class MatrixArea:
                           [self.loc[0] - 1, self.loc[1]],
                           [self.loc[0] + 1, self.loc[1]], [self.loc[0] + 1, self.loc[1] - 1],
                           [self.loc[0] + 1, self.loc[1] + 1]]
-            max_ = 0
-            win = None
-            for candidate in candidates:
-                total = 0
-                for row in range(candidate[0] - 20, candidate[0] + 20):
-                    for col in range(candidate[1] - 20, candidate[1] + 20):
-                        total += (self.matrix.ff_df.iloc[row, col] * 1000 + self.matrix.fs_df.iloc[
-                            row, col] / 100 + MatrixArea.SSA.BASE) * (self.matrix.view_time_df.iloc[row, col])
-                win = candidate if total > max_ else win
-                max_ = total
-            # print(self.loc)
-            self.loc = win
-            # print(' move to ', self.loc)
+
+            def calc_importance(row_, col_):
+                importance = (self.matrix.ff_df.iloc[row_, col_] * 1000 + self.matrix.fs_df.iloc[
+                    row_, col_] / 100) + (self.matrix.view_time_df.iloc[row_, col_]) * MatrixArea.SSA.BASE
+                return importance
+
+            # 方位1
+            candidate = [self.loc[0] - 1, self.loc[1] - 1]
+            importance1 = 0
+            times1 = 0
+            mean1 = 0
+            row_min = candidate[0] - MatrixArea.SSA.VIEWS
+            col_min = candidate[1] - MatrixArea.SSA.VIEWS
+            for row in range(0 if row_min < 0 else row_min, candidate[0]):
+                for col in range(0 if col_min < 0 else col_min, candidate[1]):
+                    times1 += 1
+                    importance1 += calc_importance(row, col)
+            mean1 = importance1 / times1
+
+            # 方位2
+            candidate = [self.loc[0], self.loc[1] - 1]
+            importance2 = 0
+            times2 = 0
+            mean2 = 0
+            row_min = int(candidate[0] - MatrixArea.SSA.VIEWS / 2)
+            row_max = int(candidate[0] + MatrixArea.SSA.VIEWS / 2)
+            col_min = candidate[1] - MatrixArea.SSA.VIEWS
+            for row in range(0 if row_min < 0 else row_min, 99 if row_max > 99 else row_max):
+                for col in range(0 if col_min < 0 else col_min, candidate[1]):
+                    times2 += 1
+                    importance2 += calc_importance(row, col)
+            mean2 = importance2 / times2
+
+            # 方位3
+            candidate = [self.loc[0] + 1, self.loc[1] - 1]
+            importance3 = 0
+            times3 = 0
+            mean3 = 0
+            row_max = candidate[0] + MatrixArea.SSA.VIEWS
+            col_min = candidate[1] - MatrixArea.SSA.VIEWS
+            for row in range(candidate[0], row_max if row_max < 99 else 99):
+                for col in range(0 if col_min < 0 else col_min, candidate[1]):
+                    times3 += 1
+                    importance3 += calc_importance(row, col)
+            mean3 = importance3 / times3
+
+            # 方位4
+            candidate = [self.loc[0] - 1, self.loc[1]]
+            importance4 = 0
+            times4 = 0
+            mean4 = 0
+            row_min = candidate[0] - MatrixArea.SSA.VIEWS
+            col_min = int(candidate[1] - MatrixArea.SSA.VIEWS / 2)
+            col_max = int(candidate[1] + MatrixArea.SSA.VIEWS / 2)
+            for row in range(0 if row_min < 0 else row_min, candidate[0]):
+                for col in range(0 if col_min < 0 else col_min, col_max if col_max < 99 else 99):
+                    times4 += 1
+                    importance4 += calc_importance(row, col)
+            mean4 = importance4 / times4
+
+            # 方位5
+            candidate = [self.loc[0] + 1, self.loc[1]]
+            importance5 = 0
+            times5 = 0
+            mean5 = 0
+            row_max = candidate[0] + MatrixArea.SSA.VIEWS
+            col_min = int(candidate[1] - MatrixArea.SSA.VIEWS / 2)
+            col_max = int(candidate[1] + MatrixArea.SSA.VIEWS / 2)
+            for row in range(candidate[0], row_max if row_max < 99 else 99):
+                for col in range(0 if col_min < 0 else col_min, col_max if col_max < 99 else 99):
+                    times5 += 1
+                    importance5 += calc_importance(row, col)
+            mean5 = importance5 / times5
+
+            # 方位6
+            candidate = [self.loc[0] - 1, self.loc[1] + 1]
+            importance6 = 0
+            times6 = 0
+            mean6 = 0
+            row_min = candidate[0] - MatrixArea.SSA.VIEWS
+            col_max = candidate[1] + MatrixArea.SSA.VIEWS
+            for row in range(0 if row_min < 0 else row_min, candidate[0]):
+                for col in range(candidate[1], col_max if col_max < 99 else 99):
+                    times6 += 1
+                    importance6 += calc_importance(row, col)
+            mean6 = importance6 / times6
+
+            # 方位7
+            candidate = [self.loc[0], self.loc[1] - 1]
+            importance7 = 0
+            times7 = 0
+            mean7 = 0
+            row_min = int(candidate[0] - MatrixArea.SSA.VIEWS / 2)
+            row_max = int(candidate[0] + MatrixArea.SSA.VIEWS / 2)
+            col_max = candidate[1] + MatrixArea.SSA.VIEWS
+            for row in range(0 if row_min < 0 else row_min, 99 if row_max > 99 else row_max):
+                for col in range(candidate[1], col_max if col_max < 99 else 99):
+                    times7 += 1
+                    importance7 += calc_importance(row, col)
+            mean7 = importance7 / times7
+
+            # 方位8
+            candidate = [self.loc[0], self.loc[1] - 1]
+            importance8 = 0
+            times8 = 0
+            mean8 = 0
+            row_max = candidate[0] + MatrixArea.SSA.VIEWS
+            col_max = candidate[1] + MatrixArea.SSA.VIEWS
+            for row in range(candidate[0], 99 if row_max > 99 else row_max):
+                for col in range(candidate[1], col_max if col_max < 99 else 99):
+                    times8 += 1
+                    importance8 += calc_importance(row, col)
+            mean8 = importance8 / times8
+
+            max_ = max(mean1, mean2, mean3, mean4, mean5, mean6, mean7, mean8)
+            if mean1 == max_:
+                self.loc = [self.loc[0] - 1, self.loc[1] - 1]
+            if mean2 == max_:
+                self.loc = [self.loc[0], self.loc[1] - 1]
+            if mean3 == max_:
+                self.loc = [self.loc[0] + 1, self.loc[1] - 1]
+            if mean4 == max_:
+                self.loc = [self.loc[0] - 1, self.loc[1]]
+            if mean5 == max_:
+                self.loc = [self.loc[0] + 1, self.loc[1]]
+            if mean6 == max_:
+                self.loc = [self.loc[0] - 1, self.loc[1] + 1]
+            if mean7 == max_:
+                self.loc = [self.loc[0], self.loc[1] - 1]
+            if mean8 == max_:
+                self.loc = [self.loc[0], self.loc[1] - 1]
 
         def charge(self):
             self.charge_left = 210
@@ -167,7 +286,7 @@ class MatrixArea:
     def start(self, times=400):
         for i in range(times):
             self.next_step(i)
-        self.max_view_time_df.to_csv('./result/max_view_time/max3.csv')
+        self.max_view_time_df.to_csv('./result/max_view_time/max4.csv')
 
     def show(self):
         print(self.ff_df)
