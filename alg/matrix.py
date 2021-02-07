@@ -74,7 +74,7 @@ class MatrixArea:
             # 方位1
             candidate = [self.loc[0] - 1, self.loc[1] - 1]
             importance1 = 0
-            times1 = 0
+            times1 = 1
             mean1 = 0
             row_min = candidate[0] - MatrixArea.SSA.VIEWS
             col_min = candidate[1] - MatrixArea.SSA.VIEWS
@@ -87,7 +87,7 @@ class MatrixArea:
             # 方位2
             candidate = [self.loc[0], self.loc[1] - 1]
             importance2 = 0
-            times2 = 0
+            times2 = 1
             mean2 = 0
             row_min = int(candidate[0] - MatrixArea.SSA.VIEWS / 2)
             row_max = int(candidate[0] + MatrixArea.SSA.VIEWS / 2)
@@ -101,7 +101,7 @@ class MatrixArea:
             # 方位3
             candidate = [self.loc[0] + 1, self.loc[1] - 1]
             importance3 = 0
-            times3 = 0
+            times3 = 1
             mean3 = 0
             row_max = candidate[0] + MatrixArea.SSA.VIEWS
             col_min = candidate[1] - MatrixArea.SSA.VIEWS
@@ -114,7 +114,7 @@ class MatrixArea:
             # 方位4
             candidate = [self.loc[0] - 1, self.loc[1]]
             importance4 = 0
-            times4 = 0
+            times4 = 1
             mean4 = 0
             row_min = candidate[0] - MatrixArea.SSA.VIEWS
             col_min = int(candidate[1] - MatrixArea.SSA.VIEWS / 2)
@@ -128,7 +128,7 @@ class MatrixArea:
             # 方位5
             candidate = [self.loc[0] + 1, self.loc[1]]
             importance5 = 0
-            times5 = 0
+            times5 = 1
             mean5 = 0
             row_max = candidate[0] + MatrixArea.SSA.VIEWS
             col_min = int(candidate[1] - MatrixArea.SSA.VIEWS / 2)
@@ -142,7 +142,7 @@ class MatrixArea:
             # 方位6
             candidate = [self.loc[0] - 1, self.loc[1] + 1]
             importance6 = 0
-            times6 = 0
+            times6 = 1
             mean6 = 0
             row_min = candidate[0] - MatrixArea.SSA.VIEWS
             col_max = candidate[1] + MatrixArea.SSA.VIEWS
@@ -155,7 +155,7 @@ class MatrixArea:
             # 方位7
             candidate = [self.loc[0], self.loc[1] - 1]
             importance7 = 0
-            times7 = 0
+            times7 = 1
             mean7 = 0
             row_min = int(candidate[0] - MatrixArea.SSA.VIEWS / 2)
             row_max = int(candidate[0] + MatrixArea.SSA.VIEWS / 2)
@@ -169,7 +169,7 @@ class MatrixArea:
             # 方位8
             candidate = [self.loc[0], self.loc[1] - 1]
             importance8 = 0
-            times8 = 0
+            times8 = 1
             mean8 = 0
             row_max = candidate[0] + MatrixArea.SSA.VIEWS
             col_max = candidate[1] + MatrixArea.SSA.VIEWS
@@ -293,8 +293,8 @@ class MatrixArea:
 
 
 if __name__ == '__main__':
-    loc_list = [[24, 25], [23, 25], [24, 26], [24, 27], [24, 28],
-                [29, 25], [28, 25], [27, 25], [26, 25], [25, 25]]
+    loc_list = [[45, 45], [45, 44], [45, 46], [45, 47], [45, 43],
+                [44, 45], [44, 44], [44, 46], [44, 47], [44, 43]]
 
     m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', 10, loc_list)
     m.start(20)
