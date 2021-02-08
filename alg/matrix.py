@@ -24,17 +24,20 @@ class MatrixArea:
             self.matrix = matrix
             self.ifInUrban = self.matrix.ur_df.iloc[loc[0], loc[1]]
             self.charge_left = 0
+            self.routine = []
 
-        def calc_charge_desire(self) -> float:
+        def calc_charge_desire(self):
             def calc_d():
+                d_list = []
                 d = 0
                 for cLoc in MatrixArea.SSA.chargeLoc:
                     d = abs(cLoc[0] - self.loc[0]) if d < abs(cLoc[0] - self.loc[0]) else d
                     d = abs(cLoc[1] - self.loc[1]) if d < abs(cLoc[1] - self.loc[1]) else d
-                return d
-
-            dis = calc_d()
-            return dis / self.battery
+                    d_list.append(d)
+                distance = d_list.index(d)
+                return d, MatrixArea.SSA.chargeLoc[distance]
+            dis, location = calc_d()
+            return location, dis / self.battery
 
         def isCrowded(self) -> bool:
             if self.ifInUrban == 1:
@@ -72,7 +75,7 @@ class MatrixArea:
                 return importance
 
             # 方位1
-            candidate = [self.loc[0] - 1, self.loc[1] - 1]
+            candidate = [min(self.loc[0] - 1, 0), min(self.loc[1] - 1, 0)]
             importance1 = 0
             times1 = 1
             mean1 = 0
@@ -85,7 +88,7 @@ class MatrixArea:
             mean1 = importance1 / times1
 
             # 方位2
-            candidate = [self.loc[0], self.loc[1] - 1]
+            candidate = [self.loc[0], max(0, self.loc[1] - 1)]
             importance2 = 0
             times2 = 1
             mean2 = 0
@@ -99,7 +102,7 @@ class MatrixArea:
             mean2 = importance2 / times2
 
             # 方位3
-            candidate = [self.loc[0] + 1, self.loc[1] - 1]
+            candidate = [min(self.loc[0] + 1, 99), max(0, self.loc[1] - 1)]
             importance3 = 0
             times3 = 1
             mean3 = 0
@@ -112,7 +115,7 @@ class MatrixArea:
             mean3 = importance3 / times3
 
             # 方位4
-            candidate = [self.loc[0] - 1, self.loc[1]]
+            candidate = [max(self.loc[0] - 1, 0), self.loc[1]]
             importance4 = 0
             times4 = 1
             mean4 = 0
@@ -126,7 +129,7 @@ class MatrixArea:
             mean4 = importance4 / times4
 
             # 方位5
-            candidate = [self.loc[0] + 1, self.loc[1]]
+            candidate = [max(self.loc[0] + 1, 99), self.loc[1]]
             importance5 = 0
             times5 = 1
             mean5 = 0
@@ -140,7 +143,7 @@ class MatrixArea:
             mean5 = importance5 / times5
 
             # 方位6
-            candidate = [self.loc[0] - 1, self.loc[1] + 1]
+            candidate = [max(self.loc[0] - 1, 0), min(self.loc[1] + 1, 99)]
             importance6 = 0
             times6 = 1
             mean6 = 0
@@ -153,7 +156,7 @@ class MatrixArea:
             mean6 = importance6 / times6
 
             # 方位7
-            candidate = [self.loc[0], self.loc[1] - 1]
+            candidate = [self.loc[0], min(self.loc[1] + 1, 99)]
             importance7 = 0
             times7 = 1
             mean7 = 0
@@ -167,7 +170,7 @@ class MatrixArea:
             mean7 = importance7 / times7
 
             # 方位8
-            candidate = [self.loc[0], self.loc[1] - 1]
+            candidate = [min(self.loc[0] + 1, 99), min(self.loc[1] + 1, 99)]
             importance8 = 0
             times8 = 1
             mean8 = 0
@@ -197,15 +200,18 @@ class MatrixArea:
             if mean8 == max_:
                 self.loc = [self.loc[0], self.loc[1] - 1]
 
-        def charge(self):
+        def charge(self, loc):
             self.charge_left = 210
 
         def move(self):
+            charge_Candidate, cDesire = self.calc_charge_desire()
             if self.charge_left == 0:
-                self.charge() if self.calc_charge_desire() > MatrixArea.SSA.CHARGE_THRESHOLD \
+                self.charge(charge_Candidate) if cDesire > MatrixArea.SSA.CHARGE_THRESHOLD \
                     else self.calc_desire_and_move()
             else:
                 self.charge_left -= 1
+                self.loc = charge_Candidate
+            self.routine.append(str(self.loc))
 
     def __init__(self, ff_file_name, fs_file_name, ur_file_name, SSA_num, SSA_loc_list):
         self.ff_df = pd.read_csv(ff_file_name)  # 火灾频率
@@ -258,9 +264,11 @@ class MatrixArea:
         for drone in self.SSA_loc_list:
             if self.ur_df.iloc[drone[0], drone[1]] == 1:
                 if math.sqrt(abs(drone[0] - point[0]) ** 2 + abs(drone[1] - point[1]) ** 2) < 4:
+                    self.sf_df.iloc[point[0], point[1]] += 1
                     return True
             else:
                 if math.sqrt(abs(drone[0] - point[0]) ** 2 + abs(drone[1] - point[1]) ** 2) < 10:
+                    self.sf_df.iloc[point[0], point[1]] += 1
                     return True
         return False
 
@@ -280,16 +288,36 @@ class MatrixArea:
             plane.move()
         self.get_new_SSA_loc()
         self.refresh()
-        self.air_info.to_csv('./result/routine/' + str(time_) + '.csv')
+        # self.air_info.to_csv('./result/routine/' + str(time_) + '.csv')
         print(time_)
 
     def start(self, times=400):
         for i in range(times):
             self.next_step(i)
-        self.max_view_time_df.to_csv('./result/max_view_time/max4.csv')
+        self.max_view_time_df.to_csv('./result/max_view_time/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
+        self.sf_df.to_csv('./result/freq/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
+        routine_list = []
+        for i in range(self.SSA_num):
+            routine_list.append(self.SSA_drones[i].routine)
+        r_df = pd.DataFrame(routine_list, index=['plane' + str(i + 1) for i in range(self.SSA_num)])
+        r_df.to_csv('./result/routine/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
+        print(self.calc_performance(times))
 
     def show(self):
         print(self.ff_df)
+
+    def calc_performance(self, times):
+        performance = 0
+
+        def calc_importance(row_, col_):
+            importance = (self.ff_df.iloc[row_, col_] * 1000 + self.fs_df.iloc[
+                row_, col_] / 100 + 10) * (self.sf_df.iloc[row_, col_] / times)
+            return importance
+
+        for row in range(100):
+            for col in range(100):
+                performance += calc_importance(row, col)
+        return performance
 
 
 if __name__ == '__main__':
@@ -297,4 +325,4 @@ if __name__ == '__main__':
                 [44, 45], [44, 44], [44, 46], [44, 47], [44, 43]]
 
     m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', 10, loc_list)
-    m.start(20)
+    m.start(400)
