@@ -36,6 +36,7 @@ class MatrixArea:
                     d_list.append(d)
                 distance = d_list.index(d)
                 return d, MatrixArea.SSA.chargeLoc[distance]
+
             dis, location = calc_d()
             return location, dis / self.battery
 
@@ -71,8 +72,15 @@ class MatrixArea:
 
             def calc_importance(row_, col_):
                 importance = (self.matrix.ff_df.iloc[row_, col_] * 1000 + self.matrix.fs_df.iloc[
-                    row_, col_] / 100) + (self.matrix.view_time_df.iloc[row_, col_]) * MatrixArea.SSA.BASE
+                    row_, col_] / 100 + MatrixArea.SSA.BASE) * (self.matrix.view_time_df.iloc[row_, col_])
                 return importance
+
+            # 反群聚
+            def run_away(point):
+                for drone in self.matrix.SSA_drones:
+                    if drone.loc == point:
+                        return True
+                return False
 
             # 方位1
             candidate = [min(self.loc[0] - 1, 0), min(self.loc[1] - 1, 0)]
@@ -85,7 +93,7 @@ class MatrixArea:
                 for col in range(0 if col_min < 0 else col_min, candidate[1]):
                     times1 += 1
                     importance1 += calc_importance(row, col)
-            mean1 = importance1 / times1
+            mean1 = - importance1 if run_away([min(self.loc[0] - 1, 0), min(self.loc[1] - 1, 0)]) else importance1
 
             # 方位2
             candidate = [self.loc[0], max(0, self.loc[1] - 1)]
@@ -99,7 +107,7 @@ class MatrixArea:
                 for col in range(0 if col_min < 0 else col_min, candidate[1]):
                     times2 += 1
                     importance2 += calc_importance(row, col)
-            mean2 = importance2 / times2
+            mean2 = - importance2 if run_away([self.loc[0], max(0, self.loc[1] - 1)]) else importance2
 
             # 方位3
             candidate = [min(self.loc[0] + 1, 99), max(0, self.loc[1] - 1)]
@@ -112,7 +120,7 @@ class MatrixArea:
                 for col in range(0 if col_min < 0 else col_min, candidate[1]):
                     times3 += 1
                     importance3 += calc_importance(row, col)
-            mean3 = importance3 / times3
+            mean3 = - importance3 if run_away([min(self.loc[0] + 1, 99), max(0, self.loc[1] - 1)]) else importance3
 
             # 方位4
             candidate = [max(self.loc[0] - 1, 0), self.loc[1]]
@@ -126,7 +134,7 @@ class MatrixArea:
                 for col in range(0 if col_min < 0 else col_min, col_max if col_max < 99 else 99):
                     times4 += 1
                     importance4 += calc_importance(row, col)
-            mean4 = importance4 / times4
+            mean4 = - importance4 if run_away([max(self.loc[0] - 1, 0), self.loc[1]]) else importance4
 
             # 方位5
             candidate = [max(self.loc[0] + 1, 99), self.loc[1]]
@@ -140,7 +148,7 @@ class MatrixArea:
                 for col in range(0 if col_min < 0 else col_min, col_max if col_max < 99 else 99):
                     times5 += 1
                     importance5 += calc_importance(row, col)
-            mean5 = importance5 / times5
+            mean5 = - importance5 if run_away([max(self.loc[0] + 1, 99), self.loc[1]]) else importance5
 
             # 方位6
             candidate = [max(self.loc[0] - 1, 0), min(self.loc[1] + 1, 99)]
@@ -153,7 +161,7 @@ class MatrixArea:
                 for col in range(candidate[1], col_max if col_max < 99 else 99):
                     times6 += 1
                     importance6 += calc_importance(row, col)
-            mean6 = importance6 / times6
+            mean6 = - importance6 if run_away([max(self.loc[0] - 1, 0), min(self.loc[1] + 1, 99)]) else importance6
 
             # 方位7
             candidate = [self.loc[0], min(self.loc[1] + 1, 99)]
@@ -167,7 +175,7 @@ class MatrixArea:
                 for col in range(candidate[1], col_max if col_max < 99 else 99):
                     times7 += 1
                     importance7 += calc_importance(row, col)
-            mean7 = importance7 / times7
+            mean7 = - importance7 if run_away([self.loc[0], min(self.loc[1] + 1, 99)]) else importance7
 
             # 方位8
             candidate = [min(self.loc[0] + 1, 99), min(self.loc[1] + 1, 99)]
@@ -180,11 +188,11 @@ class MatrixArea:
                 for col in range(candidate[1], col_max if col_max < 99 else 99):
                     times8 += 1
                     importance8 += calc_importance(row, col)
-            mean8 = importance8 / times8
+            mean8 = - importance8 if run_away([min(self.loc[0] + 1, 99), min(self.loc[1] + 1, 99)]) else importance8
 
             max_ = max(mean1, mean2, mean3, mean4, mean5, mean6, mean7, mean8)
             if mean1 == max_:
-                self.loc = [min(self.loc[0] - 1, 0), min(self.loc[1] - 1, 0)]
+                self.loc = [max(self.loc[0] - 1, 0), max(self.loc[1] - 1, 0)]
             if mean2 == max_:
                 self.loc = [self.loc[0], max(0, self.loc[1] - 1)]
             if mean3 == max_:
@@ -192,13 +200,15 @@ class MatrixArea:
             if mean4 == max_:
                 self.loc = [max(self.loc[0] - 1, 0), self.loc[1]]
             if mean5 == max_:
-                self.loc = [max(self.loc[0] + 1, 99), self.loc[1]]
+                self.loc = [min(self.loc[0] + 1, 99), self.loc[1]]
             if mean6 == max_:
                 self.loc = [max(self.loc[0] - 1, 0), min(self.loc[1] + 1, 99)]
             if mean7 == max_:
                 self.loc = [self.loc[0], min(self.loc[1] + 1, 99)]
             if mean8 == max_:
                 self.loc = [min(self.loc[0] + 1, 99), min(self.loc[1] + 1, 99)]
+            if max_ < 0:
+                self.loc = self.loc
 
         def charge(self, loc):
             self.charge_left = 210
@@ -322,7 +332,10 @@ class MatrixArea:
 
 if __name__ == '__main__':
     loc_list = [[45, 45], [45, 44], [45, 46], [45, 47], [45, 43],
-                [44, 45], [44, 44], [44, 46], [44, 47], [44, 43]]
+                [44, 45], [44, 44], [44, 46], [44, 47], [44, 43],
+                [42, 45], [42, 44], [42, 46], [42, 47], [42, 43],
+                [43, 45], [43, 44], [43, 46], [43, 47], [43, 43]]
 
-    m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', 10, loc_list)
-    m.start(400)
+    m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', 3, loc_list[:4])
+    print(4)
+    m.start(100)
