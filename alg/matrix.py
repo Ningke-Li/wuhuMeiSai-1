@@ -232,16 +232,15 @@ class MatrixArea:
 
         # init time matrix
         print('col:', self.cols, ' row:', self.rows)
-        a = np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows)
-        self.time_df = pd.DataFrame(a)
+        self.time_df = pd.DataFrame(np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))
 
         # init SSA and repeater
         # 所有SSA位置信息
-        self.air_info = pd.DataFrame(a)
+        self.air_info = pd.DataFrame(np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))
         for i in range(SSA_num):
             self.air_info.iloc[SSA_loc_list[i][0], SSA_loc_list[i][1]] = i + 1
         # 初始化repeater信息（充电的地方）
-        self.repeater_info = pd.DataFrame(a)
+        self.repeater_info = pd.DataFrame(np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))
         self.repeater_info.iloc[24, 74] = 1
         self.repeater_info.iloc[24, 24] = 1
         self.repeater_info.iloc[74, 74] = 1
@@ -254,9 +253,9 @@ class MatrixArea:
         self.SSA_loc_list = SSA_loc_list
 
         # 性能指标
-        self.sf_df = pd.DataFrame(a)  # 刷新次数
-        self.view_time_df = pd.DataFrame(a)  # 最近一次刷新距离现在的时间
-        self.max_view_time_df = pd.DataFrame(a)  # 最长观测间隔
+        self.sf_df = pd.DataFrame(np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))  # 刷新次数
+        self.view_time_df = pd.DataFrame(np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))  # 最近一次刷新距离现在的时间
+        self.max_view_time_df = pd.DataFrame(np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))  # 最长观测间隔
 
     def get_new_SSA_loc(self):
         new_drones_loc = []
@@ -274,11 +273,9 @@ class MatrixArea:
         for drone in self.SSA_loc_list:
             if self.ur_df.iloc[drone[0], drone[1]] == 1:
                 if math.sqrt(abs(drone[0] - point[0]) ** 2 + abs(drone[1] - point[1]) ** 2) < 4:
-                    self.sf_df.iloc[point[0], point[1]] += 1
                     return True
             else:
                 if math.sqrt(abs(drone[0] - point[0]) ** 2 + abs(drone[1] - point[1]) ** 2) < 10:
-                    self.sf_df.iloc[point[0], point[1]] += 1
                     return True
         return False
 
@@ -304,8 +301,9 @@ class MatrixArea:
     def start(self, times=400):
         for i in range(times):
             self.next_step(i)
+
         self.max_view_time_df.to_csv('./result/max_view_time/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
-        self.sf_df.to_csv('./result/freq/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
+        self.sf_df.to_csv('./result/freq/num' + str(self.SSA_num) + 'time' + str(times) + '.csv')
         routine_list = []
         for i in range(self.SSA_num):
             routine_list.append(self.SSA_drones[i].routine)
@@ -336,6 +334,6 @@ if __name__ == '__main__':
                 [42, 45], [42, 44], [42, 46], [42, 47], [42, 43],
                 [43, 45], [43, 44], [43, 46], [43, 47], [43, 43]]
 
-    m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', 3, loc_list[:4])
-    print(4)
-    m.start(100)
+    m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', 1, loc_list[:1])
+    print('1' + 'bu')
+    m.start(20)
