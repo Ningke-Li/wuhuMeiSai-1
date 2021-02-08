@@ -335,12 +335,12 @@ class MatrixArea:
         self.sf_df = pd.read_csv('./result/freq/num' + str(self.SSA_num) + 'time' + str(times) + '.csv')
         performance = 0
         print(self.sf_df.shape[0], self.sf_df.shape[1])
-        self.max_view_time_df = pd.read_csv('./result/max_view_time/' + str(self.SSA_num) + 'time' + str(times) + '.csv')
+        self.max_view_time_df = pd.read_csv('./result/max_view_time/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
 
         def calc_importance(row_, col_):
             importance = (self.ff_df.iloc[row_, col_] * 1000 + self.fs_df.iloc[
                 row_, col_] / 100 + 2) * (self.sf_df.iloc[row_, col_] / times) - \
-                         self.max_view_time_df.iloc[row_, col_] * 0.3
+                         self.max_view_time_df.iloc[row_, col_] * 0.003
             return importance
 
         for row in range(100):
@@ -364,7 +364,7 @@ if __name__ == '__main__':
                 [51, 43], [51, 44], [51, 45], [51, 46], [51, 42],
                 [50, 43], [50, 44], [50, 45], [50, 46], [50, 42]]
 
-    num = 26
-    m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', num, loc_list[:num])
-    print(str(num) + 'bu')
-    m.calc_per_with_files(300)
+    for num in range(10, 16):
+        m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', num, loc_list[:num])
+        print(str(num) + 'bu')
+        m.calc_per_with_files(300)
