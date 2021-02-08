@@ -240,7 +240,8 @@ class MatrixArea:
         for i in range(SSA_num):
             self.air_info.iloc[SSA_loc_list[i][0], SSA_loc_list[i][1]] = i + 1
         # 初始化repeater信息（充电的地方）
-        self.repeater_info = pd.DataFrame(np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))
+        self.repeater_info = pd.DataFrame(
+            np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))
         self.repeater_info.iloc[24, 74] = 1
         self.repeater_info.iloc[24, 24] = 1
         self.repeater_info.iloc[74, 74] = 1
@@ -253,9 +254,12 @@ class MatrixArea:
         self.SSA_loc_list = SSA_loc_list
 
         # 性能指标
-        self.sf_df = pd.DataFrame(np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))  # 刷新次数
-        self.view_time_df = pd.DataFrame(np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))  # 最近一次刷新距离现在的时间
-        self.max_view_time_df = pd.DataFrame(np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))  # 最长观测间隔
+        self.sf_df = pd.DataFrame(
+            np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))  # 刷新次数
+        self.view_time_df = pd.DataFrame(
+            np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))  # 最近一次刷新距离现在的时间
+        self.max_view_time_df = pd.DataFrame(
+            np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows))  # 最长观测间隔
 
     def get_new_SSA_loc(self):
         new_drones_loc = []
@@ -332,8 +336,10 @@ if __name__ == '__main__':
     loc_list = [[45, 45], [45, 44], [45, 46], [45, 47], [45, 43],
                 [44, 45], [44, 44], [44, 46], [44, 47], [44, 43],
                 [42, 45], [42, 44], [42, 46], [42, 47], [42, 43],
-                [43, 45], [43, 44], [43, 46], [43, 47], [43, 43]]
+                [43, 45], [43, 44], [43, 46], [43, 47], [43, 43],
+                [46, 43], [46, 44], [46, 45], [46, 46], [46, 42]]
 
-    m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', 1, loc_list[:1])
-    print('1' + 'bu')
-    m.start(20)
+    num = 22
+    m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', num, loc_list[:num])
+    print(str(num) + 'bu')
+    m.start(300)
