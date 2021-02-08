@@ -307,7 +307,7 @@ class MatrixArea:
             self.next_step(i)
 
         self.max_view_time_df.to_csv('./result/max_view_time/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
-        self.sf_df.to_csv('./result/freq/num' + str(self.SSA_num) + 'time' + str(times) + '.csv')
+        self.sf_df.to_csv('./result/freq/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
         routine_list = []
         for i in range(self.SSA_num):
             routine_list.append(self.SSA_drones[i].routine)
@@ -332,7 +332,7 @@ class MatrixArea:
         return performance
 
     def calc_per_with_files(self, times):
-        self.sf_df = pd.read_csv('./result/freq/num' + str(self.SSA_num) + 'time' + str(times) + '.csv')
+        self.sf_df = pd.read_csv('./result/freq/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
         performance = 0
         print(self.sf_df.shape[0], self.sf_df.shape[1])
         self.max_view_time_df = pd.read_csv('./result/max_view_time/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
@@ -364,7 +364,7 @@ if __name__ == '__main__':
                 [51, 43], [51, 44], [51, 45], [51, 46], [51, 42],
                 [50, 43], [50, 44], [50, 45], [50, 46], [50, 42]]
 
-    for num in range(10, 16):
+    for num in range(50, 51):
         m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', num, loc_list[:num])
         print(str(num) + 'bu')
         m.calc_per_with_files(300)
