@@ -4,6 +4,7 @@
 import pandas as pd
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 
 class MatrixArea:
@@ -331,10 +332,17 @@ class MatrixArea:
         return performance
 
     def calc_per_with_files(self, times):
-        self.sf_df = pd.read_csv('./result/freq/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
         performance = 0
-        print(self.sf_df.shape[0], self.sf_df.shape[1])
-        self.max_view_time_df = pd.read_csv('./result/max_view_time/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
+        self.sf_df = pd.read_csv('./result/freq/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
+        if self.sf_df.shape[0] == 100 or self.sf_df.shape[1] == 100:
+            print('OK')
+        else:
+            self.sf_df = self.sf_df.iloc[1:, :]
+            performance = 0
+            print(self.sf_df.shape[0], self.sf_df.shape[1])
+
+        self.max_view_time_df = pd.read_csv(
+            './result/max_view_time/num' + str(self.SSA_num) + 'times' + str(times) + '.csv')
 
         def calc_importance(row_, col_):
             importance = (self.ff_df.iloc[row_, col_] * 1000 + self.fs_df.iloc[
@@ -363,7 +371,13 @@ if __name__ == '__main__':
                 [51, 43], [51, 44], [51, 45], [51, 46], [51, 42],
                 [50, 43], [50, 44], [50, 45], [50, 46], [50, 42]]
 
-    for num in range(30, 40):
-        m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', num, loc_list[:num])
+    p_l = []
+
+    for num in range(1, 36):
+        m = MatrixArea('10.csv', 'fs.csv', 'ur.csv', num, loc_list[:num])
         print(str(num) + 'bu')
-        m.start(100)
+        p_l.append(m.calc_per_with_files(100))
+
+    index = [i for i in range(1, 36)]
+    plt.scatter(index, p_l)
+    plt.show()
