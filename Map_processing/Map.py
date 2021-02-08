@@ -44,11 +44,12 @@ for n in range(100):
             # z =-37.790163 + lat * n / 100
             # print
             # 下面是求概率
-            if -37.790163+ lat * n / 100 <= hw['latitude'][h] <= -37.790163 + lat * (n+1) / 100 and 148.017149+ lon * t / 100 <= hw['longitude'][
-                h] <= 148.017149 + lon * (t+1) / 100:
+            if -37.790163 + lat * n / 100 <= hw['latitude'][h] <= -37.790163 + lat * (
+                    n + 1) / 100 and 148.017149 + lon * t / 100 <= hw['longitude'][
+                h] <= 148.017149 + lon * (t + 1) / 100:
                 # print('2')
-                number1 = number1 + 1*hw['confidence'][h]/100
-                number2 = number2 + 1*hw['confidence'][h]/100
+                number1 = number1 + 1 * hw['confidence'][h] / 100
+                number2 = number2 + 1 * hw['confidence'][h] / 100
 
             # 下面是求火焰亮度
             # if -37.790163 + lat * n / 100 <= hw['latitude'][h] <= -37.790163 + lat * (
@@ -60,8 +61,8 @@ for n in range(100):
         # print(x[n, t])
         # print(number1)
 
-        x[n,t]=number1
-        number1=0
+        x[n, t] = number1
+        number1 = 0
 
         # if number1 != 0:
         #     x[n, t] = number2 / number1
@@ -69,6 +70,6 @@ for n in range(100):
         # number2 = 0
 print(x)
 print(number2)
-p = x/number2
+p = x / number2
 pd_data = pd.DataFrame(p)
 pd_data.to_csv('概率.csv')
