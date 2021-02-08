@@ -323,7 +323,7 @@ class MatrixArea:
 
         def calc_importance(row_, col_):
             importance = (self.ff_df.iloc[row_, col_] * 1000 + self.fs_df.iloc[
-                row_, col_] / 100 + 10) * (self.sf_df.iloc[row_, col_] / times)
+                row_, col_] / 100 + 2) * (self.sf_df.iloc[row_, col_] / times)
             return importance
 
         for row in range(100):
@@ -334,10 +334,13 @@ class MatrixArea:
     def calc_per_with_files(self, times):
         self.sf_df = pd.read_csv('./result/freq/num' + str(self.SSA_num) + 'time' + str(times) + '.csv')
         performance = 0
+        print(self.sf_df.shape[0], self.sf_df.shape[1])
+        self.max_view_time_df = pd.read_csv('./result/max_view_time/' + str(self.SSA_num) + 'time' + str(times) + '.csv')
 
         def calc_importance(row_, col_):
             importance = (self.ff_df.iloc[row_, col_] * 1000 + self.fs_df.iloc[
-                row_, col_] / 100 + 2) * (self.sf_df.iloc[row_, col_] / times)
+                row_, col_] / 100 + 2) * (self.sf_df.iloc[row_, col_] / times) - \
+                         self.max_view_time_df.iloc[row_, col_] * 0.3
             return importance
 
         for row in range(100):
@@ -355,11 +358,13 @@ if __name__ == '__main__':
                 [46, 43], [46, 44], [46, 45], [46, 46], [46, 42],
                 [41, 43], [41, 44], [41, 45], [41, 46], [41, 42],
                 [47, 43], [47, 44], [47, 45], [47, 46], [47, 42],
-                [47, 43], [47, 44], [47, 45], [47, 46], [47, 42],
-                [47, 43], [47, 44], [47, 45], [47, 46], [47, 42],
-                [47, 43], [47, 44], [47, 45], [47, 46], [47, 42]]
+                [48, 43], [48, 44], [48, 45], [48, 46], [48, 42],
+                [49, 43], [49, 44], [49, 45], [49, 46], [49, 42],
+                [40, 43], [40, 44], [40, 45], [40, 46], [40, 42],
+                [51, 43], [51, 44], [51, 45], [51, 46], [51, 42],
+                [50, 43], [50, 44], [50, 45], [50, 46], [50, 42]]
 
-    num = 50
+    num = 26
     m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', num, loc_list[:num])
     print(str(num) + 'bu')
-    m.start(300)
+    m.calc_per_with_files(300)
