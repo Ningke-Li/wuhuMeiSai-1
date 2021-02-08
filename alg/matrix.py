@@ -184,21 +184,21 @@ class MatrixArea:
 
             max_ = max(mean1, mean2, mean3, mean4, mean5, mean6, mean7, mean8)
             if mean1 == max_:
-                self.loc = [self.loc[0] - 1, self.loc[1] - 1]
+                self.loc = [min(self.loc[0] - 1, 0), min(self.loc[1] - 1, 0)]
             if mean2 == max_:
-                self.loc = [self.loc[0], self.loc[1] - 1]
+                self.loc = [self.loc[0], max(0, self.loc[1] - 1)]
             if mean3 == max_:
-                self.loc = [self.loc[0] + 1, self.loc[1] - 1]
+                self.loc = [min(self.loc[0] + 1, 99), max(0, self.loc[1] - 1)]
             if mean4 == max_:
-                self.loc = [self.loc[0] - 1, self.loc[1]]
+                self.loc = [max(self.loc[0] - 1, 0), self.loc[1]]
             if mean5 == max_:
-                self.loc = [self.loc[0] + 1, self.loc[1]]
+                self.loc = [max(self.loc[0] + 1, 99), self.loc[1]]
             if mean6 == max_:
-                self.loc = [self.loc[0] - 1, self.loc[1] + 1]
+                self.loc = [max(self.loc[0] - 1, 0), min(self.loc[1] + 1, 99)]
             if mean7 == max_:
-                self.loc = [self.loc[0], self.loc[1] - 1]
+                self.loc = [self.loc[0], min(self.loc[1] + 1, 99)]
             if mean8 == max_:
-                self.loc = [self.loc[0], self.loc[1] - 1]
+                self.loc = [min(self.loc[0] + 1, 99), min(self.loc[1] + 1, 99)]
 
         def charge(self, loc):
             self.charge_left = 210
