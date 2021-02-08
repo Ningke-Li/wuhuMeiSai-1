@@ -266,7 +266,6 @@ class MatrixArea:
         for drone in self.SSA_drones:
             new_drones_loc.append(drone.loc)
         self.SSA_loc_list = new_drones_loc
-        print(self.SSA_loc_list)
 
         a = np.array([0 for i in range(self.cols * self.rows)]).reshape(self.cols, self.rows)
         self.air_info = pd.DataFrame(a)
@@ -340,7 +339,7 @@ class MatrixArea:
         def calc_importance(row_, col_):
             importance = (self.ff_df.iloc[row_, col_] * 1000 + self.fs_df.iloc[
                 row_, col_] / 100 + 2) * (self.sf_df.iloc[row_, col_] / times) - \
-                         self.max_view_time_df.iloc[row_, col_] * 0.003
+                         self.max_view_time_df.iloc[row_, col_] * 0.03
             return importance
 
         for row in range(100):
@@ -364,7 +363,7 @@ if __name__ == '__main__':
                 [51, 43], [51, 44], [51, 45], [51, 46], [51, 42],
                 [50, 43], [50, 44], [50, 45], [50, 46], [50, 42]]
 
-    for num in range(50, 51):
+    for num in range(30, 40):
         m = MatrixArea('ff.csv', 'fs.csv', 'ur.csv', num, loc_list[:num])
         print(str(num) + 'bu')
-        m.calc_per_with_files(300)
+        m.start(100)
