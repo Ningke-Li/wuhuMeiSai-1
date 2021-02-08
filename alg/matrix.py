@@ -323,12 +323,27 @@ class MatrixArea:
 
         def calc_importance(row_, col_):
             importance = (self.ff_df.iloc[row_, col_] * 1000 + self.fs_df.iloc[
+                row_, col_] / 100 + 10) * (self.sf_df.iloc[row_, col_] / times)
+            return importance
+
+        for row in range(100):
+            for col in range(100):
+                performance += calc_importance(row, col)
+        return performance
+
+    def calc_per_with_files(self, times):
+        self.sf_df = pd.read_csv('./result/freq/num' + str(self.SSA_num) + 'time' + str(times) + '.csv')
+        performance = 0
+
+        def calc_importance(row_, col_):
+            importance = (self.ff_df.iloc[row_, col_] * 1000 + self.fs_df.iloc[
                 row_, col_] / 100 + 2) * (self.sf_df.iloc[row_, col_] / times)
             return importance
 
         for row in range(100):
             for col in range(100):
                 performance += calc_importance(row, col)
+        print(performance)
         return performance
 
 
